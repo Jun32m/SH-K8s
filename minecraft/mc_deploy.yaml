@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minecraft
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft
+  namespace: minecraft
+spec:
+  selector:
+    matchLabels:
+      app: minecraft
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      volumes:
+      - name: minecraft-volumes
+        persistentVolumeClaim:
+          claimName: nfs-pvc-java
+      containers:
+      - name: minecraft
+        image: itzg/minecraft-server
+        env:
+        - name: EULA
+          value: "TRUE"
+        - name: OPS
+          value: "root"   # OP権限持ちのユーザ名を記述。複数の場合は「,」で区切る。
+        - name: WHITELIST
+          value: "uir"   # 接続可能ユーザ名を記述。複数の場合は「,」で区切る。
+        - name: LEVEL
+          value: "1.20.2"     # マイクラのバージョン。
+        - name: MOTD
+          value: "MC-Kuvernetes"  # マイクラのランチャーでサーバリストに表示するサーバの説明。
+        - name: TZ
+          value: "Asia/Tokyo"
+        - name: SERVER_NAME
+          value: "mc.tokyo-skills.jp"     # サーバのドメイン名。
+        - name: MEMORY
+          value: "3G"         # 割り当てるメモリ。resourcelimitと同じ値にしておくこと。
+        - name: SPAWN_PROTECTION
+          value: "0"
+        - name: MODE
+          value: "survival"    # World生成時のゲームモード。
+        - name: DIFFICULTY
+          value: "hard"        # World生成時の難易度。
+#        - name: SEED
+#          value: '3427891657823464'    # World生成時のseed値を指定する場合はコメントイン。
+        resources:
+          limits:
+            memory: "3Gi"     # worker node内で割り当ててもらうメモリの上限。worker nodeに積んでる以上のメモリサイズは不可 。
+        ports:
+        - containerPort: 25565 # コンテナ側で開けてるポートを明示。
+        volumeMounts:
+        - name: minecraft-volumes
+          mountPath: "/data"
+---
+# 以下はロードバランサーを使用している場合。
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+  namespace: minecraft
+  labels:
+    app: minecraft
+spec:
+  type: LoadBalancer
+  ports:
+    - name: minecraft-port
+      port: 25565
+      protocol: TCP
+      targetPort: 25565
+  loadBalancerIP: 192.168.101.198
+  selector:
+    app: minecraft
+---
+# 以下は永続ボリュームを適用する場合。pvは作成済みとします。
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-java
+  namespace: minecraft
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "truenas-nfs-csi"
+    #storageClassName: "nfs-pvc-java"
+  resources:
+    requests:
+      storage: 5Gi
+        #volumeName: pvc-bbfb896a-2d26-4ff7-91ff-187681b8f163
