@@ -16,49 +16,46 @@ spec:
         - name: website-content
           emptyDir: {}
 
-      initContainers:
-        - name: init-symlink
-          image: busybox:latest
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              mkdir -p /tmp/git/repo
-              ln -s /tmp/git/repo /tmp/git/html
-          volumeMounts:
-            - name: website-content
-              mountPath: /tmp/git
-
       containers:
         - name: git-sync
           image: registry.k8s.io/git-sync/git-sync:v4.4.0
           env:
+            # 1) クローン元のGitリポジトリ
             - name: GIT_SYNC_REPO
               value: "https://github.com/lee89tw14/switching-harmony.git"
+
+            # 2) ブランチ
             - name: GIT_SYNC_BRANCH
               value: "main"
+
+            # 3) 何秒ごとにpullするか
             - name: GIT_SYNC_WAIT
               value: "30"
-            - name: GIT_SYNC_ROOT
-              value: "/tmp/git"
-            - name: GIT_SYNC_DEST
-              value: "repo"
 
-            # Basic認証情報
-            - name: GITSYNC_USERNAME
+            # 4) クローン先のルートディレクトリ (Nginxのhtmlディレクトリにそのまま書き込む)
+            - name: GIT_SYNC_ROOT
+              value: "/usr/share/nginx/html"
+
+            # 5) DESTを空文字("")にすることで、GIT_SYNC_ROOT 直下にクローン
+            - name: GIT_SYNC_DEST
+              value: ""
+
+            # 6) プライベートリポジトリの場合に必要な認証情報 (ここではSecret参照)
+            - name: GIT_SYNC_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: git-sync-credentials
                   key: username
-
-            - name: GITSYNC_PASSWORD
+            - name: GIT_SYNC_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: git-sync-credentials
                   key: password
 
+          # git-sync と Nginx が同じ emptyDir ボリュームを共有
           volumeMounts:
             - name: website-content
-              mountPath: /tmp/git
+              mountPath: /usr/share/nginx/html
 
         - name: nginx
           image: nginx:latest
@@ -67,4 +64,3 @@ spec:
           volumeMounts:
             - name: website-content
               mountPath: /usr/share/nginx/html
-              subPath: "html"
