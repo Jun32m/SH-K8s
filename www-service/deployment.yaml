@@ -68,12 +68,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: www-nginx
   name: www-nginx
 spec:
   type: LoadBalancer       
   selector:
     app: www-nginx
   ports:
-    - port: 80
-      targetPort: 80
-      nodePort: 30080  
+  - port: 80
+    protocol: TCP
+    targetPort: 80
