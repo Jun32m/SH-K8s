@@ -167,43 +167,43 @@ machine:
 
     # # Allows for extra entries to be added to the `/etc/hosts` file
      extraHostEntries:
-         - ip: 192.168.1.11
+         - ip: 192.168.101.11
            aliases:
              - talos-cp-01
-         - ip: 192.168.1.12 
+         - ip: 192.168.101.12 
            aliases:
              - talos-cp-02
-         - ip: 192.168.1.13 
+         - ip: 192.168.101.13 
            aliases:
              - talos-cp-03
-         - ip: 192.168.1.14 
+         - ip: 192.168.101.14 
            aliases:
              - talos-worker-01
-         - ip: 192.168.1.15 
+         - ip: 192.168.101.15 
            aliases:
              - talos-worker-02
-         - ip: 192.168.1.16 
+         - ip: 192.168.101.16 
            aliases:
              - talos-worker-03
-         - ip: 192.168.1.17 
+         - ip: 192.168.101.17 
            aliases:
              - talos-worker-04
-         - ip: 192.168.1.18 
+         - ip: 192.168.101.18 
            aliases:
              - talos-worker-05
-         - ip: 192.168.1.19 
+         - ip: 192.168.101.19 
            aliases:
              - talos-worker-06
-         - ip: 192.168.1.20 
+         - ip: 192.168.101.20 
            aliases:
              - talos-worker-07
-         - ip: 192.168.1.21 
+         - ip: 192.168.101.21 
            aliases:
              - talos-worker-08
-         - ip: 192.168.1.22 
+         - ip: 192.168.101.22 
            aliases:
              - talos-worker-09
-         - ip: 192.168.1.10 
+         - ip: 192.168.101.10 
            aliases:
              - talos-cp
     # extraHostEntries:
