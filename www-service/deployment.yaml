@@ -22,7 +22,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              mkdir -p /tmp/git
+              mkdir -p /tmp/git/repo
               ln -s /tmp/git/repo /tmp/git/html
           volumeMounts:
             - name: website-content
