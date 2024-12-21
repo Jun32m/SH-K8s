@@ -1,3 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-nginx-config
+data:
+  nginx.conf: |-
+    events {
+        worker_connections 1024;
+    }
+
+    http{
+      server {
+        listen 80;
+        server_name localhost;
+        #error_page 404 /404.html;
+        sendfile off;
+
+
+        # /usr/share/nginx/html/switching-harmony.git/test\ gpt をルートディレクトリに
+
+        # page1.html をトップページとして使う
+
+        location / {
+          root "/usr/share/nginx/html/switching-harmony.git/test gpt";
+          index page1.html;
+          try_files $uri $uri/ =404;
+        }
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +45,13 @@ spec:
       volumes:
         - name: website-content
           emptyDir: {}
+
+        - name: nginx-config
+          configMap:
+            name: custom-nginx-config
+            items:
+              - key: nginx.conf
+                path: nginx.conf
 
       containers:
         - name: git-sync
@@ -64,6 +101,9 @@ spec:
           volumeMounts:
             - name: website-content
               mountPath: /usr/share/nginx/html
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
 ---
 apiVersion: v1
 kind: Service
@@ -72,7 +112,7 @@ metadata:
     app: www-nginx
   name: www-nginx
 spec:
-  type: LoadBalancer       
+  type: LoadBalancer
   selector:
     app: www-nginx
   ports:
